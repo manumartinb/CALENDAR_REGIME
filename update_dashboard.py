@@ -256,6 +256,7 @@ def main():
             "z50": [None if not np.isfinite(x) else round(float(x), 3) for x in d["z50"]],
             "sma7p": [None if not np.isfinite(x) else round(float(x), 3) for x in d["sma7p"]],
             "radar": [None if not np.isfinite(x) else round(float(x), 1) for x in d["RADAR_LITE"]],
+            "spx": [None if not np.isfinite(x) else round(float(x), 2) for x in d["close"]],
         },
         "cohorts": COHORTS,
         "notes": {

@@ -199,11 +199,14 @@ fetch("data.json?v="+Date.now()).then(r=>r.json()).then(D=>{
   const s = D.series;
   Plotly.newPlot("chart", [
     {x:s.dates, y:s.score_pct, name:"COCKPIT score", mode:"lines", line:{color:"#bc8cff",width:1.6}},
+    {x:s.dates, y:s.spx, name:"SPX", mode:"lines", line:{color:"#8b949e",width:1}, yaxis:"y2"},
     {x:s.dates, y:s.radar, name:"BURST RADAR (viento)", mode:"lines", line:{color:"#58a6ff",width:0.8}, visible:"legendonly"},
   ],{
     paper_bgcolor:"#161b22", plot_bgcolor:"#161b22", font:{color:"#c9d1d9",size:11},
-    margin:{l:44,r:16,t:28,b:36}, showlegend:true, legend:{orientation:"h"},
-    yaxis:{range:[0,100], gridcolor:"#21262d"},
+    margin:{l:44,r:52,t:28,b:36}, showlegend:true, legend:{orientation:"h"},
+    yaxis:{range:[0,100], gridcolor:"#21262d", title:{text:"score / radar",font:{size:10}}},
+    yaxis2:{overlaying:"y", side:"right", showgrid:false, title:{text:"SPX",font:{size:10}},
+            tickfont:{color:"#8b949e"}, zeroline:false},
     xaxis:{gridcolor:"#21262d", rangeselector:{bgcolor:"#21262d",buttons:[
       {count:3,label:"3M",step:"month"},{count:12,label:"1A",step:"month"},
       {count:36,label:"3A",step:"month"},{step:"all",label:"All"}]}},
