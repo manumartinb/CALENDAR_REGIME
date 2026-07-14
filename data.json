@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-07-14 13:59:11",
+ "generated_at": "2026-07-14 16:42:15",
  "formula": "GATE = Z50>=1.31 AND BBW>=175 (decision ON/OFF). COCKPIT_CAL = mean(pctE(Z50), pctE(SMA7p)) con veto VIX (pctE>=0.67 -> cap 50). Zonas ROJA<=20/VERDE>=80.",
  "apr": "GO 2026-07-14 (madre r_day +0.274, LOYO 5/6, block-boot L30/L50 SIG, drop-top3 OK; caveat 2022)",
- "n_days": 1641,
+ "n_days": 1642,
  "thresholds": {
   "gate_z50": 1.31,
   "gate_z50_conviccion": 1.6,
@@ -12,55 +12,55 @@
   "vix_veto_pct": 67.0
  },
  "latest": {
-  "date": "2026-07-13",
+  "date": "2026-07-14",
   "gate": {
    "status": "CERRADO",
    "operable": "NO",
-   "z50": 1.082,
-   "z50_pct": 51.9,
-   "bbw": 242.9,
+   "z50": 1.0211,
+   "z50_pct": 49.1,
+   "bbw": 237.6,
    "bbw_pass": true
   },
   "dials": {
    "Z50": {
-    "date": "2026-07-13",
-    "value": 1.082,
-    "stale_busdays": 1,
+    "date": "2026-07-14",
+    "value": 1.0211,
+    "stale_busdays": 0,
     "warn": false,
-    "pct": 51.9
+    "pct": 49.1
    },
    "BBW": {
-    "date": "2026-07-13",
-    "value": 242.877,
-    "stale_busdays": 1,
+    "date": "2026-07-14",
+    "value": 237.5748,
+    "stale_busdays": 0,
     "warn": false,
     "pass": true
    },
    "SMA7P": {
-    "date": "2026-07-13",
-    "value": 0.5626,
-    "stale_busdays": 1,
+    "date": "2026-07-14",
+    "value": 0.4204,
+    "stale_busdays": 0,
     "warn": false,
-    "pct": 57.9
+    "pct": 52.6
    },
    "RADAR": {
-    "date": "2026-07-13",
-    "value": 63.9066,
-    "stale_busdays": 1,
+    "date": "2026-07-14",
+    "value": 85.6764,
+    "stale_busdays": 0,
     "warn": false,
-    "semaforo": "AMBAR",
+    "semaforo": "VERDE",
     "label": "viento IV - informativo, NO dinero"
    },
    "VIX": {
     "date": "2026-07-14",
-    "value": 17.16,
+    "value": 17.39,
     "stale_busdays": 0,
     "warn": false,
-    "pct": 41.8
+    "pct": 44.1
    }
   },
   "cockpit": {
-   "score_pct": 54.9,
+   "score_pct": 50.8,
    "zone": "NEUTRA",
    "veto_vix": false,
    "reason": ""
@@ -1958,7 +1958,8 @@
    "2026-07-08",
    "2026-07-09",
    "2026-07-10",
-   "2026-07-13"
+   "2026-07-13",
+   "2026-07-14"
   ],
   "score_pct": [
    null,
@@ -3851,7 +3852,8 @@
    27.16,
    43.22,
    52.99,
-   54.87
+   54.87,
+   50.85
   ],
   "z50": [
    -1.349,
@@ -5744,7 +5746,8 @@
    0.156,
    0.718,
    0.997,
-   1.082
+   1.082,
+   1.021
   ],
   "sma7p": [
    1.993,
@@ -7637,7 +7640,8 @@
    -0.469,
    0.255,
    0.554,
-   0.563
+   0.563,
+   0.42
   ],
   "radar": [
    null,
@@ -9530,7 +9534,8 @@
    54.8,
    64.3,
    67.0,
-   63.9
+   63.9,
+   85.7
   ],
   "spx": [
    2510.03,
@@ -11423,7 +11428,8 @@
    7439.53,
    7508.38,
    7540.67,
-   7548.96
+   7548.96,
+   7544.51
   ]
  },
  "cohorts": {
