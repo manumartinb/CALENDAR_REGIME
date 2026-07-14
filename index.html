@@ -42,6 +42,21 @@ th:first-child,td:first-child{text-align:left}
 .note{background:rgba(227,179,65,.06);border:1px solid rgba(227,179,65,.4);border-radius:8px;
 padding:10px 14px;font-size:.76rem;color:var(--muted);margin-bottom:8px;line-height:1.6}
 .foot{color:var(--muted);font-size:.7rem;margin-top:10px}
+.metho{margin:18px 0}
+.metho>h2{font-size:1.05rem;color:var(--txt);margin:0 0 8px}
+details{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;padding:0 14px}
+details summary{cursor:pointer;padding:11px 0;font-weight:bold;color:var(--txt);font-size:.9rem;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"\25B8 ";color:var(--blue)}
+details[open] summary::before{content:"\25BE ";color:var(--blue)}
+details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
+.mbody{font-size:.82rem;color:var(--muted);line-height:1.75;padding-bottom:14px}
+.mbody b{color:var(--txt)}
+.mbody code{background:#0d1117;border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--blue);font-size:.9em}
+.mbody ol,.mbody ul{margin:6px 0;padding-left:22px}
+.mbody li{margin:3px 0}
+.mbody .idef{margin:7px 0;padding-left:10px;border-left:2px solid var(--border)}
+.cafe{background:rgba(88,166,255,.06);border-left:3px solid var(--blue);padding:12px 15px;border-radius:0 6px 6px 0;color:var(--txt);font-size:.85rem;line-height:1.8}
 </style>
 </head>
 <body>
@@ -52,10 +67,104 @@ padding:10px 14px;font-size:.76rem;color:var(--muted);margin-bottom:8px;line-hei
 <div class="dials" id="dials"></div>
 <div id="chart" style="height:380px"></div>
 <div class="tables" id="tables"></div>
+<div class="metho">
+  <h2>Metodologia y manual operativo</h2>
+
+  <details open>
+    <summary>Como se compone el COCKPIT (y que decide cada capa)</summary>
+    <div class="mbody">
+      El dashboard tiene <b>3 capas</b> y cada una entro solo tras validarse contra dinero
+      (PnL% W50, day-level). El orden importa:
+      <ol>
+        <li><b>GATE (la decision, binaria):</b> <code>OPERAR si Z50 &ge; 1.31 AND BBW &ge; 175</code>.
+          Es lo unico que decide ON/OFF. Blindado en la auditoria masiva (delta ON-OFF +10.35 pp/dia,
+          block-bootstrap L50 [+6.6, +14.2] SIG, walk-forward 3/3). <code>Z50 &ge; 1.60</code> = zona de
+          <b>conviccion</b> (premium historico mayor).</li>
+        <li><b>COCKPIT_CAL (el contexto, continuo):</b>
+          <code>score = media( pctE(Z50), pctE(SMA7p) ) &times; 100</code>, con
+          <b>veto VIX</b>: si <code>pctE(VIX) &ge; 0.67</code> el score se capa a 50 (no fiarse del
+          boost en panico). Zonas <b>ROJA &le; 20 / NEUTRA / VERDE &ge; 80</b>. APR GO 2026-07-14:
+          r_day +0.274, LOYO 5/6, block-boot SIG; VERDE +13.8%/dia PF 5.78 vs ROJA -4.2%/dia PF 0.67,
+          y el premium VERDE sobrevive al quitar los 3 mejores episodios. <b>Es contexto, NO tamano.</b></li>
+        <li><b>Dials informativos:</b> Z50, BBW, SMA7p, RADAR, VIX en crudo, con percentil y frescura
+          (dias habiles desde el ultimo dato).</li>
+      </ol>
+      <code>pctE</code> = percentil expanding as-of (solo pasado, minimo 250 observaciones): el valor de
+      hoy se rankea contra toda su historia previa, nunca contra el futuro.
+    </div>
+  </details>
+
+  <details>
+    <summary>Formulacion de los indicadores</summary>
+    <div class="mbody">
+      <div class="idef"><b>Z50</b> = <code>(close - SMA50) / std50</code> (std muestral, incluye el dia).
+        Cuantas desviaciones tipicas esta el SPX sobre su media de 50 sesiones. Es el termometro de
+        regimen canonico de Calendar (subsume SMA7 y otras variantes).</div>
+      <div class="idef"><b>BBW</b> = banda de Bollinger(20, 2&sigma;) = <code>Upper - Lower = 4 &times; std20</code>
+        (en puntos SPX). Anchura de banda = volatilidad realizada reciente. Umbral operativo 175.</div>
+      <div class="idef"><b>SMA7p</b> = <code>100 &times; (close - SMA7) / SMA7</code>. Distancia porcentual
+        a la media de 7 sesiones = momentum corto. Dial informativo (terciles en gate PF 2.02/3.54/4.49;
+        caveat 2021).</div>
+      <div class="idef"><b>RADAR (BURST)</b> = percentil expanding del ratio de IV front/back del calendar.
+        Mide el <b>viento IV</b> (expectativas del path), <b>NO dinero</b>: el mercado ya lo cobra por
+        adelantado (ex-post +0.40 con PnL, pero ex-ante -0.01; sobre-pago partial -0.352). No perseguir
+        ni usar de veto.</div>
+      <div class="idef"><b>VIX</b> = indice de volatilidad implicita. Solo entra como <b>veto</b> de
+        sobrecalentamiento del cockpit.</div>
+      <div style="margin-top:8px">Las formulas propietarias de <b>seleccion</b> (que calendar concreto
+        montar: W/nd, CW25, CQI, FF) NO viven aqui: estan en la biblioteca canonica auth-gated de
+        own-calendar. Este panel solo resuelve el <b>SI/NO operar hoy</b>.</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Instrucciones operativas (formal)</summary>
+    <div class="mbody">
+      <ol>
+        <li><b>Mira el GATE primero.</b> Si dice NO OPERAR (Z50 &lt; 1.31 o BBW &lt; 175), no montes nada
+          hoy. Es binario y no negociable.</li>
+        <li>Si el GATE dice OPERAR y ademas <code>Z50 &ge; 1.60</code>, estas en <b>conviccion</b>: el
+          premium historico es mayor.</li>
+        <li><b>El COCKPIT es contexto, no gate ni sizing.</b> VERDE = viento historico a favor;
+          ROJA = precaucion. <b>No cambies el tamano por el score</b> (el gradiente fino se apoya en
+          pocos episodios; sizing por tramos REFUTADO en auditoria).</li>
+        <li>Si el <b>veto VIX</b> esta activo (score capado a 50), no te fies del boost: es panico, no
+          calidad estructural.</li>
+        <li><b>RADAR / burst = folclore de expectativas, no dinero.</b> Ni chase ni veto.</li>
+        <li><b>La seleccion de QUE calendar</b> (strikes, DTEs, mariposa) NO la hace este panel: usa el
+          sort de produccion de own-calendar (W/nd + CW25). Este dashboard solo abre o cierra la puerta.</li>
+        <li>Revisa la <b>frescura</b>: si un dial marca STALE (&gt;5 dias habiles) el gate/score sale
+          INDETERMINADO; no operes a ciegas.</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary>En cristiano (cafeteria)</summary>
+    <div class="mbody">
+      <div class="cafe">
+        Este panel es el <b>semaforo de la puerta</b>, no la lista de la compra. Te dice UNA cosa: si hoy
+        merece la pena montar calendars o quedarte quieto. Cuando el cartel grande dice <b>OPERAR</b>
+        (el SPX viene fuerte y con la banda ancha), la puerta esta abierta; cuando dice <b>NO OPERAR</b>,
+        no toques nada.<br><br>
+        El <b>cockpit</b> de al lado es mirar el cielo: verde = buen dia para esto, rojo = amenaza tormenta.
+        Pero OJO, es solo el <b>ambiente</b>, NO te dice cuanto apostar &mdash; eso lo aprendimos por las
+        malas: el gradiente fino es humo, se apoya en cuatro dias buenos.<br><br>
+        El reloj del <b>viento</b> (RADAR/burst) es puro folclore: bonito de ver, pero el dinero no esta ahi
+        &mdash; el mercado ya te cobra ese viento por adelantado.<br><br>
+        Y para elegir <b>que</b> calendar concreto montar, eso ya es otra pantalla (el buscador de
+        own-calendar). Aqui solo decides <b>si</b> sales a jugar hoy.
+      </div>
+    </div>
+  </details>
+</div>
+
 <div class="note" id="note1"></div>
 <div class="note" id="note2"></div>
 <div class="foot">Fuente: series diarias SPX/VIX/RADAR (Master Daily). APR CALENDAR_COCKPIT: GO 2026-07-14
-(caveat 2022). Solo percentiles/zonas: las formulas y certificaciones viven en la app privada own-calendar.</div>
+(caveat 2022, r -0.17). Publico: metodologia de regimen (indicadores estandar + composicion del cockpit)
++ percentiles/zonas. Privado (biblioteca auth-gated de own-calendar): formulas de seleccion propietarias
+(W/nd, CW25, CQI, FF) y certificaciones completas.</div>
 
 <script>
 function pill(stale, warnThr){
