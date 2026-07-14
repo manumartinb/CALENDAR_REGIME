@@ -80,12 +80,16 @@ details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
           Es lo unico que decide ON/OFF. Blindado en la auditoria masiva (delta ON-OFF +10.35 pp/dia,
           block-bootstrap L50 [+6.6, +14.2] SIG, walk-forward 3/3). <code>Z50 &ge; 1.60</code> = zona de
           <b>conviccion</b> (premium historico mayor).</li>
-        <li><b>COCKPIT_CAL (el contexto, continuo):</b>
-          <code>score = media( pctE(Z50), pctE(SMA7p) ) &times; 100</code>, con
+        <li><b>COCKPIT_CAL V2 (el contexto, continuo):</b>
+          <code>score = pctE(Z50) &times; 100</code>, con
           <b>veto VIX</b>: si <code>pctE(VIX) &ge; 0.67</code> el score se capa a 50 (no fiarse del
-          boost en panico). Zonas <b>ROJA &le; 20 / NEUTRA / VERDE &ge; 80</b>. APR GO 2026-07-14:
-          r_day +0.274, LOYO 5/6, block-boot SIG; VERDE +13.8%/dia PF 5.78 vs ROJA -4.2%/dia PF 0.67,
-          y el premium VERDE sobrevive al quitar los 3 mejores episodios. <b>Es contexto, NO tamano.</b></li>
+          boost en panico). Zonas <b>ROJA &le; 20 / NEUTRA / VERDE &ge; 80</b>. Certificado 2026-07-14:
+          r_day +0.267, LOYO 5/6, block-boot SIG; VERDE +11.2%/dia PF 3.73 vs ROJA -4.8%/dia PF 0.66,
+          y el premium VERDE sobrevive al quitar los 3 mejores episodios. <b>Es contexto, NO tamano.</b>
+          <br><span style="font-size:.9em">Nota V1&rarr;V2: la version inicial promediaba tambien
+          pctE(SMA7p), pero un estudio del mismo dia demostro que SMA7p causaba el 88% de los saltos
+          &gt;25 pts del score (es momentum de 7 sesiones, no regimen) sin aportar dinero (bootstrap
+          pareado = empate). Se simplifico a Z50 puro; SMA7p queda como dial informativo.</span></li>
         <li><b>Dials informativos:</b> Z50, BBW, SMA7p, RADAR, VIX en crudo, con percentil y frescura
           (dias habiles desde el ultimo dato).</li>
       </ol>
@@ -161,8 +165,7 @@ details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
 
 <div class="note" id="note1"></div>
 <div class="note" id="note2"></div>
-<div class="foot">Fuente: series diarias SPX/VIX/RADAR (Master Daily). APR CALENDAR_COCKPIT: GO 2026-07-14
-(caveat 2022, r -0.17). Publico: metodologia de regimen (indicadores estandar + composicion del cockpit)
+<div class="foot">Fuente: series diarias SPX/VIX/RADAR (Master Daily). COCKPIT V2 (Z50-only) certificado 2026-07-14, estudio zigzag (caveat 2022, r -0.38). Publico: metodologia de regimen (indicadores estandar + composicion del cockpit)
 + percentiles/zonas. Privado (biblioteca auth-gated de own-calendar): formulas de seleccion propietarias
 (W/nd, CW25, CQI, FF) y certificaciones completas.</div>
 

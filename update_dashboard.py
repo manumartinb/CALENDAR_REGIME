@@ -2,9 +2,14 @@
 """
 CALENDAR_REGIME_DASHBOARD - updater diario (patron COCKPIT Batman LT).
 Genera data.json con: GATE (Z50>=1.31 AND BBW>=175, la DECISION binaria), dials informativos
-(Z50, BBW, RADAR viento, SMA7p) y CALENDAR_COCKPIT score (APR GO 2026-07-14: mean(pctE Z50,
-pctE SMA7p) con veto VIX; madre r_day +0.274, LOYO 5/6, block-boot L30/L50 SIG, drop-top3 OK;
-caveat 2022 -0.17). Cohortes historicas embebidas (congeladas, con fecha de calibracion).
+(Z50, BBW, RADAR viento, SMA7p) y CALENDAR_COCKPIT score V2 (2026-07-14, estudio zigzag:
+score = pctE(Z50) con veto VIX, SIN SMA7p). El V1 mean(pctE Z50, pctE SMA7p) tenia zigzag
+ilogico: 88% de los saltos >25pts los causaba el percentil de SMA7p (indicador de momentum
+rapido, no de regimen); bootstrap PAREADO V1 vs V2 = EMPATE ns en dinero, y el canon ya
+decia Z50 SUBSUME SMA7. V2: r_day +0.267, LOYO 5/6 (caveat 2022 -0.38), bootL50
+[+0.128,+0.379] SIG, drop-top3 MANTIENE; 60% menos saltos grandes. Ver
+Calendar/ANALISIS/APR_CALENDAR_COCKPIT_20260714/estudio_zigzag_simplicidad.py.
+Cohortes historicas embebidas (congeladas, con fecha de calibracion).
 Publica a GitHub Pages (repo CALENDAR_REGIME). rc: 0 OK / 2 NO-DATA-WARN / 3 IDEMPOTENT / >=10 FAIL.
 Fuentes (read-only salvo el feed VIX propio):
   - SPX closes: C:/Users/Administrator/Desktop/FINAL DATA/SP_SPX_CLOSE_HISTORICAL_PRICES.csv (Step 9)
@@ -57,14 +62,15 @@ COHORTS = {
         "note": ("Referencia historica pooled. El premium fino de Z50 alto NO es senal de "
                  "tamano (episodios; auditoria 2026-07-07). Gate = ON/OFF en 1.31."),
     },
-    "cockpit_zones": {  # APR CALENDAR_COCKPIT 2026-07-14, madre day-level 1,485 dias validos
-        "calibrated": "2026-07-14 (madre 1,485 dias; LOYO 5/6, 2022 -0.17)",
+    "cockpit_zones": {  # COCKPIT V2 = pctE(Z50)+veto (estudio zigzag 2026-07-14), madre 1,485 dias
+        "calibrated": "2026-07-14 V2 Z50-only (madre 1,485 dias; LOYO 5/6, caveat 2022 -0.38)",
         "rows": [
-            {"zone": "ROJA (<=20)",   "dias": 252,  "mean_day": -4.20, "pf_day": 0.67, "cvar5": -71.6},
-            {"zone": "NEUTRA",        "dias": 1081, "mean_day": 2.77,  "pf_day": 1.39, "cvar5": -61.5},
-            {"zone": "VERDE (>=80)",  "dias": 152,  "mean_day": 13.80, "pf_day": 5.78, "cvar5": -44.2},
+            {"zone": "ROJA (<=20)",   "dias": 316, "mean_day": -4.83, "pf_day": 0.66, "cvar5": -77.2},
+            {"zone": "NEUTRA",        "dias": 916, "mean_day": 2.97,  "pf_day": 1.46, "cvar5": -55.7},
+            {"zone": "VERDE (>=80)",  "dias": 253, "mean_day": 11.22, "pf_day": 3.73, "cvar5": -56.3},
         ],
-        "note": "Premium VERDE sobrevive drop-top-3 episodios (+12.3 -> +10.5; 49 episodios).",
+        "note": ("Premium VERDE sobrevive drop-top-3 episodios (+10.25 -> +7.41). V2 sin SMA7p: "
+                 "dinero EMPATE vs V1 (boot pareado ns) con 60% menos zigzag."),
     },
     "sma7p_terciles_gate": {  # estudio EXANTE_MONEY_STACK 2026-07-13 (dentro del gate)
         "calibrated": "2026-07-13 (gated 671 dias)",
@@ -172,9 +178,11 @@ def main():
         log("NO-DATA-WARN: serie diaria demasiado corta"); return 2
 
     d["pz"] = pct_expanding(d["z50"].values)
-    d["p7"] = pct_expanding(d["sma7p"].values)
+    d["p7"] = pct_expanding(d["sma7p"].values)   # solo dial informativo (fuera del score desde V2)
     d["pv"] = pct_expanding(d["vix"].values)
-    score = (d["pz"] + d["p7"]) / 2.0 * 100.0
+    # COCKPIT V2 (2026-07-14): score = pctE(Z50) puro. SMA7p EXCLUIDO del score (estudio
+    # zigzag: causaba el 88% de los saltos >25pts sin aportar dinero; boot pareado EMPATE).
+    score = d["pz"] * 100.0
     veto = d["pv"] >= VIX_VETO_PCT
     d["score"] = np.where(veto & np.isfinite(score), np.minimum(score, 50.0), score)
     d["zone"] = np.select([d["score"] <= ZONE_ROJA, d["score"] >= ZONE_VERDE], ["ROJA", "VERDE"], default="NEUTRA")
@@ -233,9 +241,11 @@ def main():
     n_tail = len(d)
     payload = {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "formula": ("GATE = Z50>=1.31 AND BBW>=175 (decision ON/OFF). COCKPIT_CAL = mean(pctE(Z50), "
-                    "pctE(SMA7p)) con veto VIX (pctE>=0.67 -> cap 50). Zonas ROJA<=20/VERDE>=80."),
-        "apr": "GO 2026-07-14 (madre r_day +0.274, LOYO 5/6, block-boot L30/L50 SIG, drop-top3 OK; caveat 2022)",
+        "formula": ("GATE = Z50>=1.31 AND BBW>=175 (decision ON/OFF). COCKPIT_CAL V2 = pctE(Z50) "
+                    "con veto VIX (pctE>=0.67 -> cap 50). Zonas ROJA<=20/VERDE>=80. SMA7p = solo dial."),
+        "apr": ("V2 Z50-only certificado 2026-07-14 (estudio zigzag: r_day +0.267, LOYO 5/6, bootL50 "
+                "[+0.128,+0.379] SIG, drop-top3 MANTIENE; vs V1 EMPATE ns en dinero con 60% menos "
+                "zigzag; caveat 2022 -0.38)"),
         "n_days": int(np.isfinite(d["score"]).sum()),
         "thresholds": {"gate_z50": GATE_Z50, "gate_z50_conviccion": GATE_Z50_CONV, "gate_bbw": GATE_BBW,
                        "roja_max": ZONE_ROJA, "verde_min": ZONE_VERDE, "vix_veto_pct": VIX_VETO_PCT * 100},
