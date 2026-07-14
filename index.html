@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CALENDAR REGIME - gate + cockpit (day-level)</title>
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--txt:#c9d1d9;--muted:#8b949e;
+--green:#3fb950;--red:#f85149;--gold:#e3b341;--blue:#58a6ff;--purple:#bc8cff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);
+font-family:Consolas,'Courier New',monospace;padding:18px}
+h1{font-size:1.25rem;margin:0 0 2px}.sub{color:var(--muted);font-size:.78rem;margin-bottom:14px}
+.hero{border:2px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:14px;
+background:var(--card);display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.hero .big{font-size:2rem;font-weight:bold;padding:6px 18px;border-radius:8px}
+.hero .big.SI{background:rgba(63,185,80,.15);color:var(--green);border:1px solid var(--green)}
+.hero .big.NO{background:rgba(248,81,73,.12);color:var(--red);border:1px solid var(--red)}
+.hero .det{font-size:.85rem;color:var(--muted);line-height:1.7}
+.dials{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.dial{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+.dial .name{font-size:.72rem;color:var(--muted);letter-spacing:.06em}
+.dial .val{font-size:1.6rem;font-weight:bold;margin:4px 0}
+.dial .pct{font-size:.8rem;color:var(--blue)}
+.dial .d-date{font-size:.68rem;color:var(--muted);margin-top:4px}
+.pill{display:inline-block;font-size:.66rem;padding:1px 8px;border-radius:10px;margin-left:6px}
+.pill.ok{background:rgba(63,185,80,.15);color:var(--green)}
+.pill.warn{background:rgba(227,179,65,.15);color:var(--gold)}
+.pill.bad{background:rgba(248,81,73,.15);color:var(--red)}
+.zone{display:inline-block;font-weight:bold;padding:2px 12px;border-radius:6px;font-size:.95rem}
+.zone.VERDE{background:rgba(63,185,80,.2);color:var(--green)}
+.zone.NEUTRA{background:rgba(139,148,158,.18);color:var(--txt)}
+.zone.ROJA{background:rgba(248,81,73,.18);color:var(--red)}
+.zone.SIN_DATO,.zone.INDETERMINADO{background:rgba(227,179,65,.15);color:var(--gold)}
+#chart{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:14px}
+.tables{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-bottom:14px}
+.tbl{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:.78rem}
+.tbl h3{margin:0 0 6px;font-size:.82rem}.tbl .cal{color:var(--muted);font-size:.68rem;margin-bottom:6px}
+table{width:100%;border-collapse:collapse}
+td,th{padding:3px 6px;text-align:right;border-bottom:1px solid #21262d}
+th:first-child,td:first-child{text-align:left}
+.note{background:rgba(227,179,65,.06);border:1px solid rgba(227,179,65,.4);border-radius:8px;
+padding:10px 14px;font-size:.76rem;color:var(--muted);margin-bottom:8px;line-height:1.6}
+.foot{color:var(--muted);font-size:.7rem;margin-top:10px}
+</style>
+</head>
+<body>
+<h1>CALENDAR REGIME <span style="color:var(--muted)">- gate + cockpit (day-level)</span></h1>
+<div class="sub" id="gen">cargando...</div>
+
+<div class="hero" id="hero"></div>
+<div class="dials" id="dials"></div>
+<div id="chart" style="height:380px"></div>
+<div class="tables" id="tables"></div>
+<div class="note" id="note1"></div>
+<div class="note" id="note2"></div>
+<div class="foot">Fuente: series diarias SPX/VIX/RADAR (Master Daily). APR CALENDAR_COCKPIT: GO 2026-07-14
+(caveat 2022). Solo percentiles/zonas: las formulas y certificaciones viven en la app privada own-calendar.</div>
+
+<script>
+function pill(stale, warnThr){
+  if (stale<=0) return '<span class="pill ok">hoy</span>';
+  if (stale<=warnThr) return '<span class="pill ok">'+stale+'d</span>';
+  if (stale<=5) return '<span class="pill warn">'+stale+'d</span>';
+  return '<span class="pill bad">STALE '+stale+'d</span>';
+}
+fetch("data.json?v="+Date.now()).then(r=>r.json()).then(D=>{
+  document.getElementById("gen").textContent =
+    "generado "+D.generated_at+" | ultimo dato "+D.latest.date+" | n_dias score "+D.n_days;
+  const g = D.latest.gate, ck = D.latest.cockpit;
+  document.getElementById("hero").innerHTML =
+    '<div><div class="big '+g.operable+'">'+(g.operable==="SI"?"OPERAR":"NO OPERAR")+'</div></div>'+
+    '<div class="det"><b>GATE '+g.status+'</b> - Z50 '+(g.z50>=0?"+":"")+g.z50+' (umbral +1.31'+
+    ' | conviccion +1.60) | BBW '+g.bbw+' '+(g.bbw_pass?"PASS":"FAIL")+' (umbral 175)<br>'+
+    'COCKPIT: <b>'+(ck.score_pct==null?"N/A":ck.score_pct)+'</b> <span class="zone '+ck.zone+'">'+ck.zone+'</span>'+
+    (ck.veto_vix?' <span class="pill warn">VETO VIX</span>':'')+
+    '<br><span style="font-size:.72rem">El gate decide ON/OFF. El score es contexto day-level, no tamano.</span></div>';
+  const order = [["Z50","Z50"],["BBW","BB WIDTH"],["SMA7P","SMA7 %"],["RADAR","BURST RADAR"],["VIX","VIX"]];
+  document.getElementById("dials").innerHTML = order.map(([k,lab])=>{
+    const d = D.latest.dials[k]; if(!d) return "";
+    let v = d.value==null ? "N/A" : (k==="BBW"? d.value.toFixed(0) : d.value.toFixed(2));
+    let extra = d.pct!=null ? '<div class="pct">pctl '+d.pct+'</div>' : "";
+    if (k==="BBW") extra = '<div class="pct">'+(d["pass"]?"PASS &ge;175":"FAIL &lt;175")+'</div>';
+    if (k==="RADAR") extra = '<div class="pct">'+(d.semaforo||"")+'</div>'+
+        '<div style="font-size:.6rem;color:var(--muted)">viento IV - no dinero</div>';
+    return '<div class="dial"><div class="name">'+lab+'</div><div class="val">'+v+'</div>'+extra+
+      '<div class="d-date">'+d.date+' '+pill(d.stale_busdays, 2)+'</div></div>';
+  }).join("");
+  // chart score con bandas
+  const s = D.series;
+  Plotly.newPlot("chart", [
+    {x:s.dates, y:s.score_pct, name:"COCKPIT score", mode:"lines", line:{color:"#bc8cff",width:1.6}},
+    {x:s.dates, y:s.radar, name:"BURST RADAR (viento)", mode:"lines", line:{color:"#58a6ff",width:0.8}, visible:"legendonly"},
+  ],{
+    paper_bgcolor:"#161b22", plot_bgcolor:"#161b22", font:{color:"#c9d1d9",size:11},
+    margin:{l:44,r:16,t:28,b:36}, showlegend:true, legend:{orientation:"h"},
+    yaxis:{range:[0,100], gridcolor:"#21262d"},
+    xaxis:{gridcolor:"#21262d", rangeselector:{bgcolor:"#21262d",buttons:[
+      {count:3,label:"3M",step:"month"},{count:12,label:"1A",step:"month"},
+      {count:36,label:"3A",step:"month"},{step:"all",label:"All"}]}},
+    shapes:[
+      {type:"rect",xref:"paper",x0:0,x1:1,y0:0,y1:D.thresholds.roja_max,fillcolor:"rgba(248,81,73,.08)",line:{width:0}},
+      {type:"rect",xref:"paper",x0:0,x1:1,y0:D.thresholds.verde_min,y1:100,fillcolor:"rgba(63,185,80,.08)",line:{width:0}}],
+    annotations:[
+      {xref:"paper",x:.01,y:D.thresholds.roja_max-5,text:"ROJA",showarrow:false,font:{color:"#f85149",size:10}},
+      {xref:"paper",x:.01,y:D.thresholds.verde_min+5,text:"VERDE",showarrow:false,font:{color:"#3fb950",size:10}}]
+  },{displayModeBar:false,responsive:true});
+  // tablas de cohortes
+  const C = D.cohorts;
+  function tbl(title, cal, heads, rows, note){
+    return '<div class="tbl"><h3>'+title+'</h3><div class="cal">calibrado: '+cal+'</div>'+
+      '<table><tr>'+heads.map(h=>'<th>'+h+'</th>').join("")+'</tr>'+
+      rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join("")+'</tr>').join("")+'</table>'+
+      (note?'<div class="cal" style="margin-top:6px">'+note+'</div>':"")+'</div>';
+  }
+  document.getElementById("tables").innerHTML =
+    tbl("Dinero/dia por banda Z50 (historico)", C.gate_bands.calibrated,
+      ["banda","dias","mean %/dia","PF dia"],
+      C.gate_bands.rows.map(r=>[r.band,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2)]), C.gate_bands.note)+
+    tbl("Dinero/dia por zona COCKPIT", C.cockpit_zones.calibrated,
+      ["zona","dias","mean %/dia","PF dia","CVaR5"],
+      C.cockpit_zones.rows.map(r=>[r.zone,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2),r.cvar5]), C.cockpit_zones.note)+
+    tbl("SMA7p terciles (dentro del gate)", C.sma7p_terciles_gate.calibrated,
+      ["tercil","dias","mean %/dia","PF dia"],
+      C.sma7p_terciles_gate.rows.map(r=>[r.tercil,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2)]), C.sma7p_terciles_gate.note);
+  document.getElementById("note1").textContent = "NOTA ANTI-SIZING: " + D.notes.anti_sizing;
+  document.getElementById("note2").textContent = "NOTA VIENTO: " + D.notes.radar_wind;
+}).catch(e=>{document.getElementById("gen").textContent="ERROR cargando data.json: "+e;});
+</script>
+</body>
+</html>
