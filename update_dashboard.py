@@ -254,6 +254,10 @@ def main():
                        "roja_max": ZONE_ROJA, "verde_min": ZONE_VERDE, "vix_veto_pct": VIX_VETO_PCT * 100},
         "latest": {
             "date": last_date,
+            # zone/pct a nivel raiz = badge del portal manumb-research.com (card CALENDAR_REGIME):
+            # mostramos LA DECISION del gate (OPERAR/NO OPERAR), la cabecera de Calendar.
+            "zone": "OPERAR" if operable else "NO OPERAR",
+            "pct": dials["Z50"].get("pct"),
             "gate": {"status": gate_status, "operable": "SI" if operable else "NO",
                      "z50": round(z, 4), "z50_pct": dials["Z50"].get("pct"),
                      "bbw": round(b, 1), "bbw_pass": bool(b >= GATE_BBW)},

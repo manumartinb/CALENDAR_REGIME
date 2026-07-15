@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-07-15 17:38:22",
+ "generated_at": "2026-07-15 18:00:21",
  "formula": "GATE = Z50>=1.31 AND BBW>=175 (decision ON/OFF). REGIMEN_Z50 = pctE(Z50) en zonas con veto VIX (pctE>=0.67 -> cap 50). Zonas ROJA<=20/VERDE>=80. Es el percentil de Z50 bucketizado, NO un composite: identico al dial Z50 salvo el veto (~5% dias).",
  "apr": "REGIMEN_Z50 (ex-COCKPIT) certificado 2026-07-14 tras estudio zigzag: score = pctE(Z50) solo (SMA7p retirado, causaba 88% del zigzag sin dinero). r_day +0.267, LOYO 5/6, bootL50 [+0.128,+0.379] SIG, drop-top3 MANTIENE; caveat 2022 -0.38",
  "n_days": 1643,
@@ -13,6 +13,8 @@
  },
  "latest": {
   "date": "2026-07-15",
+  "zone": "NO OPERAR",
+  "pct": 57.3,
   "gate": {
    "status": "CERRADO",
    "operable": "NO",
