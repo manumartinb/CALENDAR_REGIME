@@ -1,7 +1,7 @@
 {
- "generated_at": "2026-07-15 16:40:10",
- "formula": "GATE = Z50>=1.31 AND BBW>=175 (decision ON/OFF). COCKPIT_CAL V2 = pctE(Z50) con veto VIX (pctE>=0.67 -> cap 50). Zonas ROJA<=20/VERDE>=80. SMA7p = solo dial.",
- "apr": "V2 Z50-only certificado 2026-07-14 (estudio zigzag: r_day +0.267, LOYO 5/6, bootL50 [+0.128,+0.379] SIG, drop-top3 MANTIENE; vs V1 EMPATE ns en dinero con 60% menos zigzag; caveat 2022 -0.38)",
+ "generated_at": "2026-07-15 17:38:22",
+ "formula": "GATE = Z50>=1.31 AND BBW>=175 (decision ON/OFF). REGIMEN_Z50 = pctE(Z50) en zonas con veto VIX (pctE>=0.67 -> cap 50). Zonas ROJA<=20/VERDE>=80. Es el percentil de Z50 bucketizado, NO un composite: identico al dial Z50 salvo el veto (~5% dias).",
+ "apr": "REGIMEN_Z50 (ex-COCKPIT) certificado 2026-07-14 tras estudio zigzag: score = pctE(Z50) solo (SMA7p retirado, causaba 88% del zigzag sin dinero). r_day +0.267, LOYO 5/6, bootL50 [+0.128,+0.379] SIG, drop-top3 MANTIENE; caveat 2022 -0.38",
  "n_days": 1643,
  "thresholds": {
   "gate_z50": 1.31,
@@ -59,7 +59,7 @@
     "pct": 32.0
    }
   },
-  "cockpit": {
+  "regime_z50": {
    "score_pct": 57.3,
    "zone": "NEUTRA",
    "veto_vix": false,
@@ -11475,7 +11475,7 @@
    ],
    "note": "Referencia historica pooled. El premium fino de Z50 alto NO es senal de tamano (episodios; auditoria 2026-07-07). Gate = ON/OFF en 1.31."
   },
-  "cockpit_zones": {
+  "regime_zones": {
    "calibrated": "2026-07-14 V2 Z50-only (madre 1,485 dias; LOYO 5/6, caveat 2022 -0.38)",
    "rows": [
     {

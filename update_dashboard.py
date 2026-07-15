@@ -2,8 +2,10 @@
 """
 CALENDAR_REGIME_DASHBOARD - updater diario (patron COCKPIT Batman LT).
 Genera data.json con: GATE (Z50>=1.31 AND BBW>=175, la DECISION binaria), dials informativos
-(Z50, BBW, RADAR viento, SMA7p) y CALENDAR_COCKPIT score V2 (2026-07-14, estudio zigzag:
-score = pctE(Z50) con veto VIX, SIN SMA7p). El V1 mean(pctE Z50, pctE SMA7p) tenia zigzag
+(Z50, BBW, RADAR viento, SMA7p) y REGIMEN_Z50 score (ex-COCKPIT; 2026-07-14, estudio zigzag:
+score = pctE(Z50) en zonas con veto VIX, SIN SMA7p). Renombrado de COCKPIT a REGIMEN_Z50
+porque colapso a un solo indicador (identico al dial Z50 salvo el veto ~5% dias): un
+"cockpit" implica multi-instrumento, y ya no lo es. El V1 mean(pctE Z50, pctE SMA7p) tenia zigzag
 ilogico: 88% de los saltos >25pts los causaba el percentil de SMA7p (indicador de momentum
 rapido, no de regimen); bootstrap PAREADO V1 vs V2 = EMPATE ns en dinero, y el canon ya
 decia Z50 SUBSUME SMA7. V2: r_day +0.267, LOYO 5/6 (caveat 2022 -0.38), bootL50
@@ -62,7 +64,7 @@ COHORTS = {
         "note": ("Referencia historica pooled. El premium fino de Z50 alto NO es senal de "
                  "tamano (episodios; auditoria 2026-07-07). Gate = ON/OFF en 1.31."),
     },
-    "cockpit_zones": {  # COCKPIT V2 = pctE(Z50)+veto (estudio zigzag 2026-07-14), madre 1,485 dias
+    "regime_zones": {  # REGIMEN Z50 = pctE(Z50)+veto (estudio zigzag 2026-07-14), madre 1,485 dias
         "calibrated": "2026-07-14 V2 Z50-only (madre 1,485 dias; LOYO 5/6, caveat 2022 -0.38)",
         "rows": [
             {"zone": "ROJA (<=20)",   "dias": 316, "mean_day": -4.83, "pf_day": 0.66, "cvar5": -77.2},
@@ -228,7 +230,7 @@ def main():
     z, b = float(last["z50"]), float(last["bbw"])
     gate_status = "CERRADO" if z < GATE_Z50 else ("ABIERTO" if z < GATE_Z50_CONV else "CONVICCION")
     operable = (z >= GATE_Z50) and (b >= GATE_BBW)
-    cockpit_zone = "INDETERMINADO" if indeterminado else str(last["zone"])
+    regime_zone = "INDETERMINADO" if indeterminado else str(last["zone"])
 
     # cross-check con SPX_REGIME_LATEST.json (aviso, no fatal)
     try:
@@ -241,11 +243,12 @@ def main():
     n_tail = len(d)
     payload = {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "formula": ("GATE = Z50>=1.31 AND BBW>=175 (decision ON/OFF). COCKPIT_CAL V2 = pctE(Z50) "
-                    "con veto VIX (pctE>=0.67 -> cap 50). Zonas ROJA<=20/VERDE>=80. SMA7p = solo dial."),
-        "apr": ("V2 Z50-only certificado 2026-07-14 (estudio zigzag: r_day +0.267, LOYO 5/6, bootL50 "
-                "[+0.128,+0.379] SIG, drop-top3 MANTIENE; vs V1 EMPATE ns en dinero con 60% menos "
-                "zigzag; caveat 2022 -0.38)"),
+        "formula": ("GATE = Z50>=1.31 AND BBW>=175 (decision ON/OFF). REGIMEN_Z50 = pctE(Z50) en zonas "
+                    "con veto VIX (pctE>=0.67 -> cap 50). Zonas ROJA<=20/VERDE>=80. Es el percentil de "
+                    "Z50 bucketizado, NO un composite: identico al dial Z50 salvo el veto (~5% dias)."),
+        "apr": ("REGIMEN_Z50 (ex-COCKPIT) certificado 2026-07-14 tras estudio zigzag: score = pctE(Z50) "
+                "solo (SMA7p retirado, causaba 88% del zigzag sin dinero). r_day +0.267, LOYO 5/6, bootL50 "
+                "[+0.128,+0.379] SIG, drop-top3 MANTIENE; caveat 2022 -0.38"),
         "n_days": int(np.isfinite(d["score"]).sum()),
         "thresholds": {"gate_z50": GATE_Z50, "gate_z50_conviccion": GATE_Z50_CONV, "gate_bbw": GATE_BBW,
                        "roja_max": ZONE_ROJA, "verde_min": ZONE_VERDE, "vix_veto_pct": VIX_VETO_PCT * 100},
@@ -255,10 +258,10 @@ def main():
                      "z50": round(z, 4), "z50_pct": dials["Z50"].get("pct"),
                      "bbw": round(b, 1), "bbw_pass": bool(b >= GATE_BBW)},
             "dials": dials,
-            "cockpit": {"score_pct": None if not np.isfinite(last["score"]) else round(float(last["score"]), 1),
-                        "zone": cockpit_zone,
-                        "veto_vix": bool(veto.iloc[-1]) if np.isfinite(last["pv"]) else False,
-                        "reason": "dial core stale >5bd" if indeterminado else ""},
+            "regime_z50": {"score_pct": None if not np.isfinite(last["score"]) else round(float(last["score"]), 1),
+                           "zone": regime_zone,
+                           "veto_vix": bool(veto.iloc[-1]) if np.isfinite(last["pv"]) else False,
+                           "reason": "dial core stale >5bd" if indeterminado else ""},
         },
         "series": {
             "dates": d["time"].dt.strftime("%Y-%m-%d").tolist(),
@@ -279,7 +282,7 @@ def main():
     tmp.write_text(json.dumps(payload, indent=1), encoding="utf-8")
     tmp.replace(DATA_JSON)
     log(f"data.json escrito: {last_date} | gate={gate_status}/{'SI' if operable else 'NO'} "
-        f"| score={payload['latest']['cockpit']['score_pct']} ({cockpit_zone}) | n_days={payload['n_days']} "
+        f"| score={payload['latest']['regime_z50']['score_pct']} ({regime_zone}) | n_days={payload['n_days']} "
         f"| {time.time()-t0:.1f}s")
 
     if PUSH_ENABLED and (HERE / ".git").exists():

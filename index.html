@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CALENDAR REGIME - gate + cockpit (day-level)</title>
+<title>CALENDAR REGIME - gate + regimen Z50 (day-level)</title>
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 <style>
 :root{--bg:#0d1117;--card:#161b22;--border:#30363d;--txt:#c9d1d9;--muted:#8b949e;
@@ -60,7 +60,7 @@ details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
 </style>
 </head>
 <body>
-<h1>CALENDAR REGIME <span style="color:var(--muted)">- gate + cockpit (day-level)</span></h1>
+<h1>CALENDAR REGIME <span style="color:var(--muted)">- gate + regimen Z50 (day-level)</span></h1>
 <div class="sub" id="gen">cargando...</div>
 
 <div class="hero" id="hero"></div>
@@ -71,27 +71,29 @@ details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
   <h2>Metodologia y manual operativo</h2>
 
   <details open>
-    <summary>Como se compone el COCKPIT (y que decide cada capa)</summary>
+    <summary>Como se compone el score (y que decide cada capa)</summary>
     <div class="mbody">
-      El dashboard tiene <b>3 capas</b> y cada una entro solo tras validarse contra dinero
+      El dashboard tiene <b>2 decisiones + dials</b>, validadas contra dinero
       (PnL% W50, day-level). El orden importa:
       <ol>
         <li><b>GATE (la decision, binaria):</b> <code>OPERAR si Z50 &ge; 1.31 AND BBW &ge; 175</code>.
           Es lo unico que decide ON/OFF. Blindado en la auditoria masiva (delta ON-OFF +10.35 pp/dia,
           block-bootstrap L50 [+6.6, +14.2] SIG, walk-forward 3/3). <code>Z50 &ge; 1.60</code> = zona de
           <b>conviccion</b> (premium historico mayor).</li>
-        <li><b>COCKPIT_CAL V2 (el contexto, continuo):</b>
+        <li><b>REGIMEN Z50 (el contexto, continuo):</b>
           <code>score = pctE(Z50) &times; 100</code>, con
           <b>veto VIX</b>: si <code>pctE(VIX) &ge; 0.67</code> el score se capa a 50 (no fiarse del
           boost en panico). Zonas <b>ROJA &le; 20 / NEUTRA / VERDE &ge; 80</b>. Certificado 2026-07-14:
           r_day +0.267, LOYO 5/6, block-boot SIG; VERDE +11.2%/dia PF 3.73 vs ROJA -4.8%/dia PF 0.66,
           y el premium VERDE sobrevive al quitar los 3 mejores episodios. <b>Es contexto, NO tamano.</b>
-          <br><span style="font-size:.9em">Nota V1&rarr;V2: la version inicial promediaba tambien
-          pctE(SMA7p), pero un estudio del mismo dia demostro que SMA7p causaba el 88% de los saltos
-          &gt;25 pts del score (es momentum de 7 sesiones, no regimen) sin aportar dinero (bootstrap
-          pareado = empate). Se simplifico a Z50 puro; SMA7p queda como dial informativo.</span></li>
+          <br><span style="font-size:.9em"><b>Que es y que NO es:</b> es el percentil de Z50
+          bucketizado en zonas (mismo numero que el dial Z50 salvo cuando salta el veto VIX, ~5% de
+          los dias). NO es un composite ni un instrumento independiente. Se llamo "COCKPIT" al clonar
+          el patron de Batman LT (donde el cockpit SI combina 3 senales); aqui, tras retirar SMA7p en
+          el estudio del zigzag (causaba el 88% de los saltos &gt;25 pts sin aportar dinero &mdash;
+          bootstrap pareado empate), colapso a Z50 y se renombro a REGIMEN Z50 por honestidad.</span></li>
         <li><b>Dials informativos:</b> Z50, BBW, SMA7p, RADAR, VIX en crudo, con percentil y frescura
-          (dias habiles desde el ultimo dato).</li>
+          (dias habiles desde el ultimo dato). SMA7p sigue visible pero YA NO entra en el score.</li>
       </ol>
       <code>pctE</code> = percentil expanding as-of (solo pasado, minimo 250 observaciones): el valor de
       hoy se rankea contra toda su historia previa, nunca contra el futuro.
@@ -114,7 +116,7 @@ details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
         adelantado (ex-post +0.40 con PnL, pero ex-ante -0.01; sobre-pago partial -0.352). No perseguir
         ni usar de veto.</div>
       <div class="idef"><b>VIX</b> = indice de volatilidad implicita. Solo entra como <b>veto</b> de
-        sobrecalentamiento del cockpit.</div>
+        sobrecalentamiento del REGIMEN Z50.</div>
       <div style="margin-top:8px">Las formulas propietarias de <b>seleccion</b> (que calendar concreto
         montar: W/nd, CW25, CQI, FF) NO viven aqui: estan en la biblioteca canonica auth-gated de
         own-calendar. Este panel solo resuelve el <b>SI/NO operar hoy</b>.</div>
@@ -129,7 +131,7 @@ details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
           hoy. Es binario y no negociable.</li>
         <li>Si el GATE dice OPERAR y ademas <code>Z50 &ge; 1.60</code>, estas en <b>conviccion</b>: el
           premium historico es mayor.</li>
-        <li><b>El COCKPIT es contexto, no gate ni sizing.</b> VERDE = viento historico a favor;
+        <li><b>El REGIMEN Z50 es contexto, no gate ni sizing.</b> VERDE = viento historico a favor;
           ROJA = precaucion. <b>No cambies el tamano por el score</b> (el gradiente fino se apoya en
           pocos episodios; sizing por tramos REFUTADO en auditoria).</li>
         <li>Si el <b>veto VIX</b> esta activo (score capado a 50), no te fies del boost: es panico, no
@@ -151,7 +153,7 @@ details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
         merece la pena montar calendars o quedarte quieto. Cuando el cartel grande dice <b>OPERAR</b>
         (el SPX viene fuerte y con la banda ancha), la puerta esta abierta; cuando dice <b>NO OPERAR</b>,
         no toques nada.<br><br>
-        El <b>cockpit</b> de al lado es mirar el cielo: verde = buen dia para esto, rojo = amenaza tormenta.
+        El <b>REGIMEN Z50</b> de al lado es mirar el cielo: verde = buen dia para esto, rojo = amenaza tormenta.
         Pero OJO, es solo el <b>ambiente</b>, NO te dice cuanto apostar &mdash; eso lo aprendimos por las
         malas: el gradiente fino es humo, se apoya en cuatro dias buenos.<br><br>
         El reloj del <b>viento</b> (RADAR/burst) es puro folclore: bonito de ver, pero el dinero no esta ahi
@@ -165,7 +167,7 @@ details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
 
 <div class="note" id="note1"></div>
 <div class="note" id="note2"></div>
-<div class="foot">Fuente: series diarias SPX/VIX/RADAR (Master Daily). COCKPIT V2 (Z50-only) certificado 2026-07-14, estudio zigzag (caveat 2022, r -0.38). Publico: metodologia de regimen (indicadores estandar + composicion del cockpit)
+<div class="foot">Fuente: series diarias SPX/VIX/RADAR (Master Daily). REGIMEN Z50 (ex-COCKPIT, Z50-only) certificado 2026-07-14, estudio zigzag (caveat 2022, r -0.38). Publico: metodologia de regimen (indicadores estandar + composicion del score)
 + percentiles/zonas. Privado (biblioteca auth-gated de own-calendar): formulas de seleccion propietarias
 (W/nd, CW25, CQI, FF) y certificaciones completas.</div>
 
@@ -179,14 +181,14 @@ function pill(stale, warnThr){
 fetch("data.json?v="+Date.now()).then(r=>r.json()).then(D=>{
   document.getElementById("gen").textContent =
     "generado "+D.generated_at+" | ultimo dato "+D.latest.date+" | n_dias score "+D.n_days;
-  const g = D.latest.gate, ck = D.latest.cockpit;
+  const g = D.latest.gate, ck = D.latest.regime_z50;
   document.getElementById("hero").innerHTML =
     '<div><div class="big '+g.operable+'">'+(g.operable==="SI"?"OPERAR":"NO OPERAR")+'</div></div>'+
     '<div class="det"><b>GATE '+g.status+'</b> - Z50 '+(g.z50>=0?"+":"")+g.z50+' (umbral +1.31'+
     ' | conviccion +1.60) | BBW '+g.bbw+' '+(g.bbw_pass?"PASS":"FAIL")+' (umbral 175)<br>'+
-    'COCKPIT: <b>'+(ck.score_pct==null?"N/A":ck.score_pct)+'</b> <span class="zone '+ck.zone+'">'+ck.zone+'</span>'+
+    'REGIMEN Z50: <b>'+(ck.score_pct==null?"N/A":ck.score_pct)+'</b> <span class="zone '+ck.zone+'">'+ck.zone+'</span>'+
     (ck.veto_vix?' <span class="pill warn">VETO VIX</span>':'')+
-    '<br><span style="font-size:.72rem">El gate decide ON/OFF. El score es contexto day-level, no tamano.</span></div>';
+    '<br><span style="font-size:.72rem">El gate decide ON/OFF. REGIMEN Z50 = percentil de Z50 en zonas (contexto day-level, no tamano).</span></div>';
   const order = [["Z50","Z50"],["BBW","BB WIDTH"],["SMA7P","SMA7 %"],["RADAR","BURST RADAR"],["VIX","VIX"]];
   document.getElementById("dials").innerHTML = order.map(([k,lab])=>{
     const d = D.latest.dials[k]; if(!d) return "";
@@ -201,7 +203,7 @@ fetch("data.json?v="+Date.now()).then(r=>r.json()).then(D=>{
   // chart score con bandas
   const s = D.series;
   Plotly.newPlot("chart", [
-    {x:s.dates, y:s.score_pct, name:"COCKPIT score", mode:"lines", line:{color:"#bc8cff",width:1.6}},
+    {x:s.dates, y:s.score_pct, name:"REGIMEN Z50 (score)", mode:"lines", line:{color:"#bc8cff",width:1.6}},
     {x:s.dates, y:s.spx, name:"SPX", mode:"lines", line:{color:"#8b949e",width:1}, yaxis:"y2"},
     {x:s.dates, y:s.radar, name:"BURST RADAR (viento)", mode:"lines", line:{color:"#58a6ff",width:0.8}, visible:"legendonly"},
   ],{
@@ -232,9 +234,9 @@ fetch("data.json?v="+Date.now()).then(r=>r.json()).then(D=>{
     tbl("Dinero/dia por banda Z50 (historico)", C.gate_bands.calibrated,
       ["banda","dias","mean %/dia","PF dia"],
       C.gate_bands.rows.map(r=>[r.band,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2)]), C.gate_bands.note)+
-    tbl("Dinero/dia por zona COCKPIT", C.cockpit_zones.calibrated,
+    tbl("Dinero/dia por zona REGIMEN Z50", C.regime_zones.calibrated,
       ["zona","dias","mean %/dia","PF dia","CVaR5"],
-      C.cockpit_zones.rows.map(r=>[r.zone,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2),r.cvar5]), C.cockpit_zones.note)+
+      C.regime_zones.rows.map(r=>[r.zone,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2),r.cvar5]), C.regime_zones.note)+
     tbl("SMA7p terciles (dentro del gate)", C.sma7p_terciles_gate.calibrated,
       ["tercil","dias","mean %/dia","PF dia"],
       C.sma7p_terciles_gate.rows.map(r=>[r.tercil,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2)]), C.sma7p_terciles_gate.note);
