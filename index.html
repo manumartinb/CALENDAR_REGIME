@@ -107,7 +107,10 @@ details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
         Cuantas desviaciones tipicas esta el SPX sobre su media de 50 sesiones. Es el termometro de
         regimen canonico de Calendar (subsume SMA7 y otras variantes).</div>
       <div class="idef"><b>BBW</b> = banda de Bollinger(20, 2&sigma;) = <code>Upper - Lower = 4 &times; std20</code>
-        (en puntos SPX). Anchura de banda = volatilidad realizada reciente. Umbral operativo 175.</div>
+        (en puntos SPX). Anchura de banda = volatilidad realizada reciente. Umbral operativo 175.
+        <b>Deriva conocida (2026-07-16):</b> el umbral esta en puntos y el SPX se ha duplicado desde la
+        calibracion; el pass-rate paso del 33% (2019) al 96% (2025), asi que hoy filtra poco.
+        Pendiente estudio de re-expresion en % del SPX; no tocar sin estudio.</div>
       <div class="idef"><b>SMA7p</b> = <code>100 &times; (close - SMA7) / SMA7</code>. Distancia porcentual
         a la media de 7 sesiones = momentum corto. Dial informativo (terciles en gate PF 2.02/3.54/4.49;
         caveat 2021).</div>
@@ -167,6 +170,7 @@ details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
 
 <div class="note" id="note1"></div>
 <div class="note" id="note2"></div>
+<div class="note" id="note3"></div>
 <div class="foot">Fuente: series diarias SPX/VIX/RADAR (Master Daily). REGIMEN Z50 (ex-COCKPIT, Z50-only) certificado 2026-07-14, estudio zigzag (caveat 2022, r -0.38). Publico: metodologia de regimen (indicadores estandar + composicion del score)
 + percentiles/zonas. Privado (biblioteca auth-gated de own-calendar): formulas de seleccion propietarias
 (W/nd, CW25, CQI, FF) y certificaciones completas.</div>
@@ -202,7 +206,10 @@ fetch("data.json?v="+Date.now()).then(r=>r.json()).then(D=>{
   }).join("");
   // chart score con bandas
   const s = D.series;
+  const gateShade = (s.gate_on||[]).map(g=>g?100:null);
   Plotly.newPlot("chart", [
+    {x:s.dates, y:gateShade, name:"GATE abierto", mode:"lines", line:{width:0},
+     fill:"tozeroy", fillcolor:"rgba(63,185,80,.10)", hoverinfo:"skip"},
     {x:s.dates, y:s.score_pct, name:"REGIMEN Z50 (score)", mode:"lines", line:{color:"#bc8cff",width:1.6}},
     {x:s.dates, y:s.spx, name:"SPX", mode:"lines", line:{color:"#8b949e",width:1}, yaxis:"y2"},
     {x:s.dates, y:s.radar, name:"BURST RADAR (viento)", mode:"lines", line:{color:"#58a6ff",width:0.8}, visible:"legendonly"},
@@ -231,17 +238,27 @@ fetch("data.json?v="+Date.now()).then(r=>r.json()).then(D=>{
       (note?'<div class="cal" style="margin-top:6px">'+note+'</div>':"")+'</div>';
   }
   document.getElementById("tables").innerHTML =
-    tbl("Dinero/dia por banda Z50 (historico)", C.gate_bands.calibrated,
+    tbl("Dinero/dia por banda de Z50 CRUDO (la vara del gate)", C.gate_bands.calibrated,
       ["banda","dias","mean %/dia","PF dia"],
-      C.gate_bands.rows.map(r=>[r.band,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2)]), C.gate_bands.note)+
-    tbl("Dinero/dia por zona REGIMEN Z50", C.regime_zones.calibrated,
+      C.gate_bands.rows.map(r=>[r.band,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2)]),
+      C.gate_bands.note + " NOTA: esta tabla y la de zonas cortan la MISMA variable (Z50); esta en valor crudo (unidades del gate), la otra en percentil (unidades del score).")+
+    tbl("Dinero/dia por zona del score (Z50 en PERCENTIL)", C.regime_zones.calibrated,
       ["zona","dias","mean %/dia","PF dia","CVaR5"],
       C.regime_zones.rows.map(r=>[r.zone,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2),r.cvar5]), C.regime_zones.note)+
-    tbl("SMA7p terciles (dentro del gate)", C.sma7p_terciles_gate.calibrated,
+    (C.evidence_by_year ? tbl("Evidencia por anio (r del score + dinero VERDE/ROJA)", C.evidence_by_year.calibrated,
+      ["anio","n dias","r","VERDE d","VERDE %/dia","ROJA d","ROJA %/dia"],
+      C.evidence_by_year.rows.map(r=>{
+        const bad = r.r < 0;
+        const wrap = v => bad ? '<span style="color:var(--red)">'+v+'</span>' : v;
+        return [wrap(r.year), r.n, wrap((r.r>0?"+":"")+r.r.toFixed(2)), r.verde_d,
+                wrap(r.verde_mean.toFixed(2)), r.roja_d, r.roja_mean.toFixed(2)];
+      }), C.evidence_by_year.note) : "")+
+    tbl("SMA7p terciles (dentro del gate) - dial informativo", C.sma7p_terciles_gate.calibrated,
       ["tercil","dias","mean %/dia","PF dia"],
       C.sma7p_terciles_gate.rows.map(r=>[r.tercil,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2)]), C.sma7p_terciles_gate.note);
   document.getElementById("note1").textContent = "NOTA ANTI-SIZING: " + D.notes.anti_sizing;
   document.getElementById("note2").textContent = "NOTA VIENTO: " + D.notes.radar_wind;
+  if (D.notes.bbw_drift) document.getElementById("note3").textContent = "NOTA BBW: " + D.notes.bbw_drift;
 }).catch(e=>{document.getElementById("gen").textContent="ERROR cargando data.json: "+e;});
 </script>
 </body>

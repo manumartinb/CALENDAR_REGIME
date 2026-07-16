@@ -74,6 +74,20 @@ COHORTS = {
         "note": ("Premium VERDE sobrevive drop-top-3 episodios (+10.25 -> +7.41). V2 sin SMA7p: "
                  "dinero EMPATE vs V1 (boot pareado ns) con 60% menos zigzag."),
     },
+    "evidence_by_year": {  # auditoria dashboard 2026-07-16 (madre day-level, score publicado)
+        "calibrated": "2026-07-16 (madre 1,735 dias; score con warm-up 250d -> arranca 2020)",
+        "rows": [
+            {"year": 2020, "n": 251, "r": 0.25,  "verde_d": 30, "verde_mean": 4.06,   "roja_d": 44,  "roja_mean": -10.08},
+            {"year": 2021, "n": 252, "r": 0.36,  "verde_d": 68, "verde_mean": 9.80,   "roja_d": 23,  "roja_mean": -6.69},
+            {"year": 2022, "n": 242, "r": -0.38, "verde_d": 15, "verde_mean": -23.17, "roja_d": 124, "roja_mean": 0.82},
+            {"year": 2023, "n": 248, "r": 0.27,  "verde_d": 45, "verde_mean": 12.33,  "roja_d": 49,  "roja_mean": -7.84},
+            {"year": 2024, "n": 252, "r": 0.52,  "verde_d": 60, "verde_mean": 17.45,  "roja_d": 23,  "roja_mean": -12.81},
+            {"year": 2025, "n": 238, "r": 0.39,  "verde_d": 34, "verde_mean": 23.65,  "roja_d": 49,  "roja_mean": -6.60},
+        ],
+        "note": ("Evidencia honesta anio a anio: 5 de 6 positivos. 2022 (bear de inflacion) es el "
+                 "fallo conocido: r=-0.38 y VERDE perdio -23%/dia (15 dias). El regimen Z50 asume "
+                 "mercado alcista-fuerte; en bear prolongado la senal se invierte."),
+    },
     "sma7p_terciles_gate": {  # estudio EXANTE_MONEY_STACK 2026-07-13 (dentro del gate)
         "calibrated": "2026-07-13 (gated 671 dias)",
         "rows": [
@@ -274,12 +288,19 @@ def main():
             "sma7p": [None if not np.isfinite(x) else round(float(x), 3) for x in d["sma7p"]],
             "radar": [None if not np.isfinite(x) else round(float(x), 1) for x in d["RADAR_LITE"]],
             "spx": [None if not np.isfinite(x) else round(float(x), 2) for x in d["close"]],
+            # gate ON/OFF historico para sombrear el chart (evidencia visual de la decision)
+            "gate_on": [bool(z >= GATE_Z50 and b >= GATE_BBW) if (np.isfinite(z) and np.isfinite(b)) else False
+                        for z, b in zip(d["z50"], d["bbw"])],
         },
         "cohorts": COHORTS,
         "notes": {
             "anti_sizing": ("El gate es ON/OFF. El premium de Z50/score alto se apoya en pocos episodios: "
                             "NO dimensionar por decil/zona (auditorias 2026-07-07 / 2026-07-14)."),
             "radar_wind": "BURST_RADAR y CAL_BURST leen VIENTO IV (expectativas del path), NO dinero.",
+            "bbw_drift": ("DERIVA CONOCIDA (auditoria 2026-07-16): el umbral BBW>=175 esta en PUNTOS y el "
+                          "SPX se ha duplicado desde la calibracion -> pass-rate 2019: 33% vs 2025: 96%. "
+                          "Historicamente aporto pureza (expulsaba dias de +4.4%/dia vs +10.5% del gate); "
+                          "hoy filtra poco. Pendiente estudio de re-expresion en % del SPX. NO tocar sin estudio."),
         },
     }
     tmp = DATA_JSON.with_suffix(".tmp")
