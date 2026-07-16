@@ -287,10 +287,15 @@ fetch("data.json?v="+Date.now()).then(r=>r.json()).then(D=>{
     if (R.wnd_loyo) charts.push({title:"W/nd - r por anio (LOYO 7/7)", x:R.wnd_loyo.years.map(String),
       y:R.wnd_loyo.r, color:"#3fb950", ytitle:"Spearman r", sub:R.wnd_loyo.note});
     const cont = document.getElementById("research");
+    // 1a pasada: crear TODAS las cajas (la rejilla queda con su layout final);
+    // 2a pasada: pintar. Evita el bug de charts recortados (Plotly mide el div
+    // al insertarse, antes de que el grid se reparta al anadir los siguientes).
     charts.forEach((c, i) => {
       const box = document.createElement("div"); box.className = "tbl";
       box.innerHTML = '<h3>'+c.title+'</h3><div class="cal">'+c.sub+'</div><div id="rch'+i+'" style="height:210px"></div>';
       cont.appendChild(box);
+    });
+    charts.forEach((c, i) => {
       const xs = c.x || Array.from({length:c.y.length}, (_,j)=>"D"+(j+1));
       Plotly.newPlot("rch"+i, [{x:xs, y:c.y, type:"bar",
         marker:{color:c.y.map(v=>v<0?"#f85149":c.color)}}],
@@ -299,6 +304,10 @@ fetch("data.json?v="+Date.now()).then(r=>r.json()).then(D=>{
          xaxis:{tickfont:{size:9}}, showlegend:false},
         {displayModeBar:false, responsive:true});
     });
+    requestAnimationFrame(() => charts.forEach((_, i) => {
+      const el = document.getElementById("rch"+i);
+      if (el && el.data) Plotly.Plots.resize(el);
+    }));
   }
 
   document.getElementById("note1").textContent = "NOTA ANTI-SIZING: " + D.notes.anti_sizing;
