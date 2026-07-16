@@ -67,6 +67,12 @@ details[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
 <div class="dials" id="dials"></div>
 <div id="chart" style="height:380px"></div>
 <div class="tables" id="tables"></div>
+
+<div class="metho">
+  <h2>Research: predictabilidad y monotonia (deciles vs dinero)</h2>
+  <div class="sub" id="research-cal"></div>
+  <div class="tables" id="research" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"></div>
+</div>
 <div class="metho">
   <h2>Metodologia y manual operativo</h2>
 
@@ -256,6 +262,45 @@ fetch("data.json?v="+Date.now()).then(r=>r.json()).then(D=>{
     tbl("SMA7p terciles (dentro del gate) - dial informativo", C.sma7p_terciles_gate.calibrated,
       ["tercil","dias","mean %/dia","PF dia"],
       C.sma7p_terciles_gate.rows.map(r=>[r.tercil,r.dias,r.mean_day.toFixed(2),r.pf_day.toFixed(2)]), C.sma7p_terciles_gate.note);
+  // ---- Research: deciles/monotonia de las variables canonicas ----
+  if (D.research) {
+    const R = D.research;
+    document.getElementById("research-cal").textContent =
+      "Datos congelados: " + R.calibrated + ". Deciles D1 (peor) -> D10 (mejor) de cada variable vs dinero realizado. " +
+      "tau = monotonia de Kendall (+1.00 = perfecta). Barras verdes = paga; planas/rojas = no paga.";
+    const charts = [];
+    const dl = R.day_level && R.day_level.regime_z50;
+    if (dl) charts.push({title:"REGIMEN Z50 (day-level) - %/dia por decil del score",
+      y:dl.means, color:"#bc8cff", ytitle:"% por dia",
+      sub:"r="+dl.r+" | tau="+dl.tau+" | "+dl.ndias+" dias. Elegir el DIA."});
+    const tl = R.trade_level || {};
+    const defs = [
+      ["wnd", "RATIO W/nd (sort produccion V23) - mediana % por decil", "#3fb950", "Elegir el TRADE. APR GO 2026-07-16."],
+      ["cqi_vrp", "CQI_V2_UNIVERSAL_VRP (score V23) - mediana % por decil", "#58a6ff", "Elegir el TRADE (calidad term-structure)."],
+      ["t25", "T+25PCT_NORM (CW25) - mediana % por decil", "#39c5cf", "Validado, NO desplegado en LIVE."],
+      ["ff_adj", "FF_ADJ / viento IV - mediana % por decil (CONTRASTE)", "#f85149", "El VIENTO NO paga: plano/invertido. Canon burst."],
+    ];
+    for (const [k, title, color, sub] of defs) {
+      if (tl[k]) charts.push({title, y:tl[k].medianas, color, ytitle:"% por trade",
+        sub:"r="+tl[k].r+" | tau="+tl[k].tau+" | n="+tl[k].n.toLocaleString()+" ("+tl[k].ndias+" dias). "+sub});
+    }
+    if (R.wnd_loyo) charts.push({title:"W/nd - r por anio (LOYO 7/7)", x:R.wnd_loyo.years.map(String),
+      y:R.wnd_loyo.r, color:"#3fb950", ytitle:"Spearman r", sub:R.wnd_loyo.note});
+    const cont = document.getElementById("research");
+    charts.forEach((c, i) => {
+      const box = document.createElement("div"); box.className = "tbl";
+      box.innerHTML = '<h3>'+c.title+'</h3><div class="cal">'+c.sub+'</div><div id="rch'+i+'" style="height:210px"></div>';
+      cont.appendChild(box);
+      const xs = c.x || Array.from({length:c.y.length}, (_,j)=>"D"+(j+1));
+      Plotly.newPlot("rch"+i, [{x:xs, y:c.y, type:"bar",
+        marker:{color:c.y.map(v=>v<0?"#f85149":c.color)}}],
+        {paper_bgcolor:"#161b22", plot_bgcolor:"#161b22", font:{color:"#8b949e",size:10},
+         margin:{l:38,r:8,t:6,b:26}, yaxis:{gridcolor:"#21262d", title:{text:c.ytitle,font:{size:9}}, zerolinecolor:"#30363d"},
+         xaxis:{tickfont:{size:9}}, showlegend:false},
+        {displayModeBar:false, responsive:true});
+    });
+  }
+
   document.getElementById("note1").textContent = "NOTA ANTI-SIZING: " + D.notes.anti_sizing;
   document.getElementById("note2").textContent = "NOTA VIENTO: " + D.notes.radar_wind;
   if (D.notes.bbw_drift) document.getElementById("note3").textContent = "NOTA BBW: " + D.notes.bbw_drift;

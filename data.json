@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-07-16 18:37:13",
+ "generated_at": "2026-07-16 19:05:24",
  "formula": "GATE = Z50>=1.31 AND BBW>=175 (decision ON/OFF). REGIMEN_Z50 = pctE(Z50) en zonas con veto VIX (pctE>=0.67 -> cap 50). Zonas ROJA<=20/VERDE>=80. Es el percentil de Z50 bucketizado, NO un composite: identico al dial Z50 salvo el veto (~5% dias).",
  "apr": "REGIMEN_Z50 (ex-COCKPIT) certificado 2026-07-14 tras estudio zigzag: score = pctE(Z50) solo (SMA7p retirado, causaba 88% del zigzag sin dinero). r_day +0.267, LOYO 5/6, bootL50 [+0.128,+0.379] SIG, drop-top3 MANTIENE; caveat 2022 -0.38",
  "n_days": 1644,
@@ -13489,6 +13489,183 @@
     }
    ],
    "note": "Dial informativo (LOYO 5/6; 2021 fallo). NO es gate ni senal de tamano."
+  }
+ },
+ "research": {
+  "calibrated": "2026-07-16 (madre 254,978 tr / 1,743 dias; target PnL_fwd_pct_50_mediana)",
+  "trade_level": {
+   "wnd": {
+    "medianas": [
+     5.94,
+     6.4,
+     7.13,
+     7.74,
+     8.28,
+     8.38,
+     9.28,
+     9.8,
+     10.72,
+     12.5
+    ],
+    "means": [
+     2.32,
+     2.19,
+     2.59,
+     2.73,
+     2.8,
+     2.59,
+     2.83,
+     3.22,
+     3.76,
+     6.06
+    ],
+    "tau": 1.0,
+    "r": 0.102,
+    "n": 254978,
+    "ndias": 1743
+   },
+   "t25": {
+    "medianas": [
+     5.57,
+     5.95,
+     6.37,
+     7.09,
+     8.05,
+     9.09,
+     10.04,
+     10.51,
+     11.4,
+     9.94
+    ],
+    "means": [
+     1.61,
+     1.1,
+     1.33,
+     1.67,
+     3.19,
+     3.98,
+     4.83,
+     4.39,
+     4.55,
+     4.14
+    ],
+    "tau": 0.87,
+    "r": 0.101,
+    "n": 253733,
+    "ndias": 1735
+   },
+   "cqi_vrp": {
+    "medianas": [
+     -2.92,
+     1.92,
+     2.17,
+     3.43,
+     6.33,
+     8.24,
+     9.44,
+     10.87,
+     13.07,
+     14.07
+    ],
+    "means": [
+     -9.48,
+     -3.66,
+     -2.82,
+     -0.75,
+     2.45,
+     4.71,
+     6.56,
+     9.44,
+     12.46,
+     11.88
+    ],
+    "tau": 1.0,
+    "r": 0.225,
+    "n": 253733,
+    "ndias": 1735
+   },
+   "ff_adj": {
+    "medianas": [
+     7.89,
+     9.17,
+     8.96,
+     8.81,
+     8.57,
+     8.01,
+     7.16,
+     6.19,
+     6.26,
+     6.75
+    ],
+    "means": [
+     4.53,
+     4.74,
+     4.13,
+     3.82,
+     3.75,
+     2.88,
+     2.58,
+     1.91,
+     1.31,
+     1.38
+    ],
+    "tau": -0.64,
+    "r": -0.025,
+    "n": 254311,
+    "ndias": 1738
+   }
+  },
+  "day_level": {
+   "regime_z50": {
+    "means": [
+     -0.27,
+     -7.99,
+     -3.93,
+     -2.35,
+     0.79,
+     5.6,
+     7.09,
+     5.53,
+     9.86,
+     12.82
+    ],
+    "pf": [
+     0.98,
+     0.46,
+     0.62,
+     0.74,
+     1.12,
+     2.18,
+     2.66,
+     1.87,
+     3.2,
+     4.91
+    ],
+    "tau": 0.78,
+    "r": 0.267,
+    "ndias": 1485
+   }
+  },
+  "wnd_loyo": {
+   "years": [
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+   ],
+   "r": [
+    0.02,
+    0.03,
+    0.1,
+    0.06,
+    0.07,
+    0.13,
+    0.16
+   ],
+   "note": "APR 2026-07-16: LOYO 7/7 en pct_50; tendencia creciente."
   }
  },
  "notes": {
