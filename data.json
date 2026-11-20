@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-11-19 16:22:12",
+ "generated_at": "2026-11-20 16:20:14",
  "formula": "GATE = Z50>=1.31 AND BBW>=175 (decision ON/OFF). REGIMEN_Z50 = pctE(Z50) en zonas con veto VIX (pctE>=0.67 -> cap 50). Zonas ROJA<=20/VERDE>=80. Es el percentil de Z50 bucketizado, NO un composite: identico al dial Z50 salvo el veto (~5% dias).",
  "apr": "REGIMEN_Z50 (ex-COCKPIT) certificado 2026-07-14 tras estudio zigzag: score = pctE(Z50) solo (SMA7p retirado, causaba 88% del zigzag sin dinero). r_day +0.267, LOYO 5/6, bootL50 [+0.128,+0.379] SIG, drop-top3 MANTIENE; caveat 2022 -0.38",
- "n_days": 1733,
+ "n_days": 1734,
  "thresholds": {
   "gate_z50": 1.31,
   "gate_z50_conviccion": 1.6,
@@ -12,57 +12,57 @@
   "vix_veto_pct": 67.0
  },
  "latest": {
-  "date": "2026-11-19",
+  "date": "2026-11-20",
   "zone": "NO OPERAR",
-  "pct": 1.6,
+  "pct": 0.2,
   "gate": {
    "status": "CERRADO",
    "operable": "NO",
-   "z50": -2.6087,
-   "z50_pct": 1.6,
-   "bbw": 498.2,
+   "z50": -3.6614,
+   "z50_pct": 0.2,
+   "bbw": 625.6,
    "bbw_pass": true
   },
   "dials": {
    "Z50": {
-    "date": "2026-11-19",
-    "value": -2.6087,
+    "date": "2026-11-20",
+    "value": -3.6614,
     "stale_busdays": 0,
     "warn": false,
-    "pct": 1.6
+    "pct": 0.2
    },
    "BBW": {
-    "date": "2026-11-19",
-    "value": 498.2042,
+    "date": "2026-11-20",
+    "value": 625.6494,
     "stale_busdays": 0,
     "warn": false,
     "pass": true
    },
    "SMA7P": {
-    "date": "2026-11-19",
-    "value": -1.5731,
+    "date": "2026-11-20",
+    "value": -3.5873,
     "stale_busdays": 0,
     "warn": false,
-    "pct": 9.8
+    "pct": 1.6
    },
    "RADAR": {
-    "date": "2026-11-19",
-    "value": 2.7218,
+    "date": "2026-11-20",
+    "value": 1.8136,
     "stale_busdays": 0,
     "warn": false,
     "semaforo": "ROJO",
     "label": "viento IV - informativo, NO dinero"
    },
    "VIX": {
-    "date": "2026-11-19",
-    "value": 22.66,
+    "date": "2026-11-20",
+    "value": 27.31,
     "stale_busdays": 0,
     "warn": false,
-    "pct": 75.1
+    "pct": 87.7
    }
   },
   "regime_z50": {
-   "score_pct": 1.6,
+   "score_pct": 0.2,
    "zone": "ROJA",
    "veto_vix": true,
    "reason": ""
@@ -2052,7 +2052,8 @@
    "2026-11-16",
    "2026-11-17",
    "2026-11-18",
-   "2026-11-19"
+   "2026-11-19",
+   "2026-11-20"
   ],
   "score_pct": [
    null,
@@ -4037,7 +4038,8 @@
    3.59,
    1.06,
    0.96,
-   1.61
+   1.61,
+   0.15
   ],
   "z50": [
    -1.349,
@@ -6022,7 +6024,8 @@
    -2.164,
    -2.774,
    -2.853,
-   -2.609
+   -2.609,
+   -3.661
   ],
   "sma7p": [
    1.993,
@@ -8007,7 +8010,8 @@
    -0.62,
    -1.67,
    -1.911,
-   -1.573
+   -1.573,
+   -3.587
   ],
   "radar": [
    null,
@@ -9992,7 +9996,8 @@
    8.9,
    3.2,
    4.6,
-   2.7
+   3.1,
+   1.8
   ],
   "spx": [
    2510.03,
@@ -11977,7 +11982,8 @@
    7469.65,
    7384.59,
    7342.98,
-   7342.34
+   7342.34,
+   7130.19
   ],
   "gate_on": [
    false,
@@ -13936,6 +13942,7 @@
    true,
    true,
    true,
+   false,
    false,
    false,
    false,
